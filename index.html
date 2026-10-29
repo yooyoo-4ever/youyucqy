@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>预约忧郁的句号打瓦登记表</title>
+  <style>
+    :root {
+      --red: #ff4655;
+      --bg: #0f1923;
+      --card: #1b2733;
+      --text: #ece8e1;
+      --muted: #8b978f;
+      --border: #2e3b47;
+      --green: #3ddc97;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--card);
+      border-radius: 16px;
+      padding: 28px 22px;
+      border-top: 4px solid var(--red);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+      align-self: flex-start;
+    }
+    h1 { margin: 0 0 6px; font-size: 22px; }
+    .subtitle { margin: 0 0 24px; color: var(--muted); font-size: 14px; }
+    .field { margin-bottom: 18px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+    .optional { color: var(--muted); font-weight: 400; }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px; /* 16px 防止 iOS 自动缩放 */
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus, button:focus-visible {
+      outline: 2px solid var(--red);
+      outline-offset: 1px;
+    }
+    [aria-invalid="true"] { border-color: var(--red); }
+    textarea { resize: vertical; min-height: 70px; }
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      background: var(--red);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .6; cursor: wait; }
+    .hint { text-align: center; color: var(--muted); font-size: 13px; margin-top: 14px; }
+    .error { color: var(--red); font-size: 13px; margin-top: 4px; min-height: 1em; }
+    .result {
+      margin-top: 18px;
+      padding: 14px;
+      background: var(--bg);
+      border: 1px dashed var(--red);
+      border-radius: 10px;
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    /* 对真人隐藏（防机器人字段、表格标题） */
+    .visually-hidden { position: absolute; left: -9999px; }
+
+    /* 提交成功页面 */
+    .success { text-align: center; }
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      margin: 4px auto 16px;
+      border-radius: 50%;
+      background: rgba(61, 220, 151, .15);
+      color: var(--green);
+      font-size: 34px;
+      line-height: 64px;
+    }
+    .success h2 { margin: 0 0 8px; font-size: 22px; }
+    .success h2:focus { outline: none; }
+    .preview-note { color: #f5c26b; font-size: 13px; margin-top: 8px; }
+    .summary {
+      width: 100%;
+      margin: 20px 0 24px;
+      border-collapse: collapse;
+      background: var(--bg);
+      border-radius: 10px;
+      overflow: hidden;
+      text-align: left;
+      font-size: 15px;
+    }
+    .summary th, .summary td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .summary tr:last-child th, .summary tr:last-child td { border-bottom: none; }
+    .summary th { color: var(--muted); font-weight: 400; width: 40%; }
+    .summary td { font-weight: 600; text-align: right; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <!-- 表单页面 -->
+    <section id="formView">
+      <h1>预约忧郁的句号打瓦登记表 🐷</h1>
+      <p class="subtitle">填写时间、段位和人数，预约一起打游戏</p >
+
+      <form id="bookingForm" novalidate>
+        <!-- 防机器人字段，真人看不到也不会勾选 -->
+        <div class="visually-hidden" aria-hidden="true">
+          <input type="checkbox" name="botcheck" id="botcheck" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <div class="field">
+          <label for="date">预约日期</label>
+          <input type="date" id="date" name="date" required />
+        </div>
+
+        <div class="field">
+          <label for="time">预约时间</label>
+          <input type="time" id="time" name="time" required />
+        </div>
+
+        <div class="field">
+          <label for="rank">你的段位</label>
+          <select id="rank" name="rank" required>
+            <option value="">请选择段位</option>
+            <option>黑铁</option>
+            <option>青铜</option>
+            <option>白银</option>
+            <option>黄金</option>
+            <option>铂金</option>
+            <option>钻石</option>
+            <option>超凡</option>
+            <option>神话</option>
+            <option>辐能战魂</option>
+            <option>未定级</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="count">参与人数</label>
+          <input type="number" id="count" name="count" min="1" max="4" inputmode="numeric"
+                 placeholder="请输入人数（1-4）" required />
+        </div>
+
+        <p class="subtitle" id="contactHint" style="margin-bottom: 10px;">
+          微信号和无畏契约 ID 至少填一个，方便我联系你
+        </p >
+
+        <div class="field">
+          <label for="wechat">微信号 <span class="optional">（二选一）</span></label>
+          <input type="text" id="wechat" name="wechat" maxlength="40"
+                 placeholder="请输入微信号" aria-describedby="contactHint" />
+        </div>
+
+        <div class="field">
+          <label for="riotId">无畏契约 ID <span class="optional">（二选一）</span></label>
+          <input type="text" id="riotId" name="riotId" maxlength="40"
+                 placeholder="例如：玩家名#标签" aria-describedby="contactHint" />
+        </div>
+
+        <div class="field">
+          <label for="note">备注 <span class="optional">（可选）</span></label>
+          <textarea id="note" name="note" maxlength="200"
+                    placeholder="休闲 / 练枪 / 排位 / 时间要求"></textarea>
+        </div>
+
+        <p class="error" id="error" role="alert" aria-live="assertive"></p >
+        <button type="submit" id="submitBtn">提交预约</button>
+        <p class="hint">提交后我会尽快联系你确认上车时间 🦋</p >
+      </form>
+
+      <div class="result" id="result" aria-live="polite" hidden></div>
+    </section>
+
+    <!-- 提交成功页面 -->
+    <section id="successView" class="success" hidden>
+      <div class="success-icon" aria-hidden="true">✓</div>
+      <h2 id="successTitle" tabindex="-1">预约已提交</h2>
+      <p class="subtitle" style="margin: 0;">我会尽快联系你确认上车时间。</p >
+      <p class="preview-note" id="previewNote" hidden>预览模式：还没配置邮箱密钥，这条预约没有发送出去</p >
+
+      <table class="summary">
+        <caption class="visually-hidden">预约信息</caption>
+        <tbody>
+          <tr><th scope="row">预约日期：</th><td id="sDate"></td></tr>
+          <tr><th scope="row">预约时间：</th><td id="sTime"></td></tr>
+          <tr><th scope="row">段位：</th><td id="sRank"></td></tr>
+          <tr><th scope="row">人数：</th><td id="sCount"></td></tr>
+        </tbody>
+      </table>
+
+      <button type="button" id="againBtn">再预约一个</button>
+    </section>
+  </main>
+
+  <script>
+    // 填入 Web3Forms 发到你邮箱的 Access Key；留空 = 预览模式（不发送，直接显示成功页）
+    const ACCESS_KEY = "dde3c8db-5c9d-463d-a489-df317ca3032e";
+
+    const form = document.getElementById("bookingForm");
+    const errorEl = document.getElementById("error");
+    const resultEl = document.getElementById("result");
+    const submitBtn = document.getElementById("submitBtn");
+    const formView = document.getElementById("formView");
+    const successView = document.getElementById("successView");
+
+    const pad = n => String(n).padStart(2, "0");
+
+    // 默认填入当前日期和时间
+    function fillNow() {
+      const now = new Date();
+      form.date.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+      form.time.value = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    }
+    fillNow();
+
+    // "2026-10-29" -> "10月29日 周四（今天）"
+    function formatDate(str) {
+      const [y, m, d] = str.split("-").map(Number);
+      const target = new Date(y, m - 1, d); // 按本地时间解析，避免时区偏差
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+      const diff = Math.round((target - today) / 86400000);
+      const relative = { 0: "今天", 1: "明天", 2: "后天" }[diff];
+
+      let text = `${m}月${d}日 ${weekdays[target.getDay()]}`;
+      if (y !== today.getFullYear()) text = `${y}年` + text;
+      if (relative) text += `（${relative}）`;
+      return text;
+    }
+
+    function validate() {
+      if (!form.date.value) return { msg: "请选择预约日期", el: form.date };
+      if (!form.time.value) return { msg: "请选择预约时间", el: form.time };
+      if (!form.rank.value) return { msg: "请选择段位", el: form.rank };
+
+      const c = Number(form.count.value);
+      if (!Number.isInteger(c) || c < 1 || c > 4) {
+        return { msg: "参与人数请填写 1 到 4", el: form.count };
+      }
+
+      // 微信号和 ID 至少填一个（去掉空格后判断，防止只填空格）
+      const wechat = form.wechat.value.trim();
+      const riotId = form.riotId.value.trim();
+      if (!wechat && !riotId) {
+        return { msg: "微信号和无畏契约 ID 至少填一个", el: form.wechat };
+      }
+
+      // 填了 ID 就检查格式：名字#标签
+      if (riotId && !/^.+#.+$/.test(riotId)) {
+        return { msg: "无畏契约 ID 格式应为 玩家名#标签", el: form.riotId };
+      }
+
+      return null;
+    }
+
+    function buildText(d) {
+      return [
+        "【预约忧郁的句号打瓦】",
+        `日期：${formatDate(d.date)}`,
+        `时间：${d.time}`,
+        `段位：${d.rank}`,
+        `人数：${d.count}`,
+        `微信：${d.wechat || "未填写"}`,
+        `无畏契约ID：${d.riotId || "未填写"}`,
+        `备注：${d.note || "无"}`
+      ].join("\n");
+    }
+
+    function showResult(text) {
+      // 用 textContent 而不是 innerHTML，避免注入
+      resultEl.textContent = text;
+      resultEl.hidden = false;
+    }
+
+    // 切换到提交成功页面
+    function showSuccess(d, isPreview) {
+      document.getElementById("sDate").textContent = formatDate(d.date);
+      document.getElementById("sTime").textContent = d.time;
+      document.getElementById("sRank").textContent = d.rank;
+      document.getElementById("sCount").textContent = d.count;
+      document.getElementById("previewNote").hidden = !isPreview;
+
+      formView.hidden = true;
+      successView.hidden = false;
+      window.scrollTo(0, 0);
+      document.getElementById("successTitle").focus(); // 读屏软件会读出“预约已提交”
+    }
+
+    // 再预约一个：回到空白表单
+    document.getElementById("againBtn").addEventListener("click", () => {
+      form.reset();
+      fillNow();
+      errorEl.textContent = "";
+      resultEl.hidden = true;
+      successView.hidden = true;
+      formView.hidden = false;
+      window.scrollTo(0, 0);
+      form.date.focus();
+    });
+
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+
+      const err = validate();
+      // 清除上次的错误标记
+      form.querySelectorAll("[aria-invalid]").forEach(el => el.removeAttribute("aria-invalid"));
+      errorEl.textContent = err ? err.msg : "";
+      resultEl.hidden = true;
+      if (err) {
+        err.el.setAttribute("aria-invalid", "true");
+        err.el.focus(); // 自动跳到出错的输入框
+        return;
+      }
+
+      const d = {
+        date: form.date.value,
+        time: form.time.value,
+        rank: form.rank.value,
+        count: form.count.value.trim(),
+        wechat: form.wechat.value.trim(),
+        riotId: form.riotId.value.trim(),
+        note: form.note.value.trim()
+      };
+
+      // 没配置密钥：预览模式，直接显示成功页
+      if (!ACCESS_KEY) {
+        showSuccess(d, true);
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "提交中...";
+      try {
+        const res = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            access_key: ACCESS_KEY,
+            subject: `新的打瓦预约：${formatDate(d.date)} ${d.time}`,
+            from_name: "忧郁的句号打瓦预约",
+            botcheck: form.botcheck.checked,
+            // 中文字段名，邮件里看得更清楚
+            "预约日期": formatDate(d.date),
+            "预约时间": d.time,
+            "段位": d.rank,
+            "人数": d.count,
+            "微信号": d.wechat || "未填写",
+            "无畏契约ID": d.riotId || "未填写",
+            "备注": d.note || "无"
+          })
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || res.status);
+        showSuccess(d, false);
+      } catch {
+        // 提交失败兜底：复制文字让对方手动发给你
+        const text = buildText(d);
+        errorEl.textContent = "提交失败，请把下面的内容发给我";
+        try {
+          await navigator.clipboard.writeText(text);
+          showResult("已自动复制，粘贴到微信发给我就行：\n\n" + text);
+        } catch {
+          showResult("请长按复制或截图下面的内容发给我：\n\n" + text);
+        }
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "提交预约";
+      }
+    });
+  </script>
+</body>
+</html>
